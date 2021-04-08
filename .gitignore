@@ -10,3 +10,7 @@ examples/mpd_status/main/wifi_config.h
 *.kicad_pcb-bak
 *.sch-bak
 fp-info-cache
+# Venv
+/bin
+/lib
+/pyvenv.cfg
