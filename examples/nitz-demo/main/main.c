@@ -5,19 +5,17 @@
  * clears execute in 1.075 seconds and images are drawn in 1.531 seconds.
  */
 
-#include "cJSON.h"
-
 #include "esp_heap_caps.h"
 #include "esp_log.h"
-#include "esp_timer.h"
-#include "esp_types.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "sdkconfig.h"
+#include "esp_timer.h"
+#include "esp_types.h"
 #include <stdio.h>
 #include <string.h>
-
 #include "epd_driver.h"
+/*
 #ifdef CONFIG_EPD_DISPLAY_TYPE_ED060SC4
 #include "firasans_12pt.h"
 #else
@@ -25,28 +23,19 @@
 #endif
 #include "giraffe.h"
 #include "img_board.h"
+*/
 
+#include "stuff.h"
+
+void delay(uint32_t millis) { vTaskDelay(millis / portTICK_PERIOD_MS); }
+/*
 uint8_t *img_buf;
 
 uint8_t *framebuffer;
 uint8_t *original_image_ram;
 
-void delay(uint32_t millis) { vTaskDelay(millis / portTICK_PERIOD_MS); }
 
 uint32_t millis() { return esp_timer_get_time() / 1000; }
-
-void loop() {
-  char* inp = "{\"command\":\"draw\", \"image\":\"\"}";
-  cJSON *root;
-  root = cJSON_CreateObject();
-  cJSON_AddStringToObject(root, "command", "draw");
-  // TODO causes nullifies the whole object. Maybe the cast doesn't go as smoothly as I figured
-  // Maybe it's because this is not null-terminated
-  // cJSON_AddStringToObject(root, "image", (char*)giraffe_data);
-  const char *my_json_string = cJSON_Print(root);
-  printf("NITZ: %d\n",(int)my_json_string);
-  cJSON_Delete(root);
-}
 
 void loop_old() {
 
@@ -144,18 +133,20 @@ void loop_old() {
 
   delay(2000);
 }
+*/
 
 void epd_task() {
   epd_init();
 
   ESP_LOGW("main", "allocating...\n");
 
-  framebuffer = (uint8_t *)heap_caps_malloc(EPD_WIDTH * EPD_HEIGHT / 2, MALLOC_CAP_SPIRAM);
-  memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
+  // framebuffer = (uint8_t *)heap_caps_malloc(EPD_WIDTH * EPD_HEIGHT / 2, MALLOC_CAP_SPIRAM);
+  // memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
 
   while (1) {
     loop();
-    loop_old();
+    delay(1000);
+    // loop_old();
   };
 }
 

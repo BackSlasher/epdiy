@@ -4,10 +4,28 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 
+#include "giraffe.h"
+
 #define true 1
 
 const int frame_size = EPD_WIDTH * EPD_HEIGHT / 2;
 uint8_t *framebuffer;
+
+void print_giraffe() {
+  int pos = 0;
+  int counter = 0;
+  printf("This is a giraffe\n");
+  while (pos++ < (340*768)/2) {
+    uint8_t current = giraffe_data[pos];
+    char high = current / 16 + 'A';
+    char low = current % 16 + 'A';
+    fputc(high, stdout);
+    fputc(low, stdout);
+    counter+=2;
+  }
+  fputc('\n', stdout);
+  printf("done %d chars!\n", counter);
+}
 
 char mygetc() {
   return fgetc(stdin);
@@ -19,6 +37,8 @@ void draw_commit() {
   epd_poweroff();
 }
 
+const char ESCAPE = '\n';
+
 void cmd_draw() {
   memset(framebuffer, 0xFF, frame_size); // Color white
   int current_location = 0;
@@ -28,13 +48,18 @@ void cmd_draw() {
       return;
     }
     char c = mygetc();
-    if(c == '\n') return draw_commit();
-    if (c >= 'A' && c <= 'P') {
-      int val = c - 'A';
-      framebuffer[current_location++] = val;
+    if(c == ESCAPE) {
+      char c2 = mygetc();
+      if (c2 == ESCAPE) {
+        return draw_commit();
+      } else if (c2 == 0) {
+        framebuffer[current_location++] = ESCAPE;
+      } else {
+        ESP_LOGW(__FUNCTION__, "Invalid escaped char, code %d, discarding drawing\n", c2);
+        return;
+      }
     } else {
-      ESP_LOGW(__FUNCTION__, "Invalid char, ASCII code %d, discarding drawing\n", c);
-      return;
+      framebuffer[current_location++] = c;
     }
   }
 }
@@ -57,7 +82,7 @@ void read_command() {
       return;
     }
     char c = mygetc();
-    if (c == '\n') return;
+    if (c == ESCAPE) return;
     else if (c == ',') return parse_command(command);
     else command[cmd_len++] = c;
   }
@@ -65,7 +90,6 @@ void read_command() {
 
 void loop() {
   framebuffer = (uint8_t *)heap_caps_malloc(frame_size, MALLOC_CAP_SPIRAM);
-  while (true) {
-    read_command();
-  }
+  print_giraffe();
+  // read_command();
 }
