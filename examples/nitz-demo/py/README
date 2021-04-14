@@ -1,0 +1,1 @@
+bin/python main.py -d 192.168.1.136 draw -f $(ls ~/Pictures/Wallpapers/keepers/* | shuf | head -n1)
