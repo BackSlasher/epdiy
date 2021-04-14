@@ -39,10 +39,10 @@ void clear() {
 
 #define WRITE_HEADER(req, buffer, name, format, src) sprintf(buffer, format, src); ESP_ERROR_CHECK(httpd_resp_set_hdr(req, name, buffer));
 esp_err_t http_info(httpd_req_t *req) {
-  char header[20];
-  WRITE_HEADER(req, header, "width", "%d", EPD_WIDTH);
-  WRITE_HEADER(req, header, "height", "%d", EPD_HEIGHT);
-  WRITE_HEADER(req, header, "temperature", "%.1f", epd_ambient_temperature());
+  char width[20], height[20], temperature[20];
+  WRITE_HEADER(req, width, "width", "%d", EPD_WIDTH);
+  WRITE_HEADER(req, height, "height", "%d", EPD_HEIGHT);
+  WRITE_HEADER(req, temperature, "temperature", "%.1f", epd_ambient_temperature());
   const char resp[] = "hello. Check headers!\n";
   httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
   return ESP_OK;
@@ -65,7 +65,7 @@ esp_err_t http_draw_area(httpd_req_t *req) {
   READ_HEADER(req, header, 20, "y", "%d", &y);
   READ_HEADER(req, header, 20, "height", "%d", &height);
   READ_HEADER(req, header, 20, "width", "%d", &width);
-  int clear = httpd_req_get_hdr_value_str(req, "width", header, 0) != ESP_ERR_NOT_FOUND ? 1: 0;
+  int should_clear = httpd_req_get_hdr_value_str(req, "width", header, 0) != ESP_ERR_NOT_FOUND ? 1: 0;
   // Data is binary
   int req_size = req->content_len;
   char *content = (char*)heap_caps_malloc(req_size, MALLOC_CAP_SPIRAM);
@@ -87,8 +87,8 @@ esp_err_t http_draw_area(httpd_req_t *req) {
     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg);
     return ESP_ERR_INVALID_ARG;
   }
-  if (clear) {
-    memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
+  if (should_clear) {
+    clear();
   }
   Rect_t area = {
     .x = x,
