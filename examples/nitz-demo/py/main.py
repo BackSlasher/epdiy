@@ -67,7 +67,6 @@ def draw(ctx, file):
     img = PIL.ImageOps.fit(img, size)
     # img.thumbnail((width, height))
     img = img.convert('L')
-    img.save('/tmp/bla.png')
     img_bytes = img.tobytes()
     img_bytes = convert_8bit_to_4bit(img_bytes)
     headers = {
