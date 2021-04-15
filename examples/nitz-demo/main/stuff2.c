@@ -40,6 +40,7 @@ void clear() {
 #define WRITE_HEADER(req, buffer, name, format, src) sprintf(buffer, format, src); ESP_ERROR_CHECK(httpd_resp_set_hdr(req, name, buffer));
 esp_err_t http_info(httpd_req_t *req) {
   char width[20], height[20], temperature[20];
+  ESP_LOGI(__FUNCTION__, "Info\n");
   WRITE_HEADER(req, width, "width", "%d", EPD_WIDTH);
   WRITE_HEADER(req, height, "height", "%d", EPD_HEIGHT);
   WRITE_HEADER(req, temperature, "temperature", "%.1f", epd_ambient_temperature());
@@ -50,6 +51,7 @@ esp_err_t http_info(httpd_req_t *req) {
 
 esp_err_t http_clear(httpd_req_t *req) {
   const char resp[] = "done!\n";
+  ESP_LOGI(__FUNCTION__, "Clear\n");
   clear();
   httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
   return ESP_OK;
@@ -58,13 +60,15 @@ esp_err_t http_clear(httpd_req_t *req) {
 #define READ_HEADER(req, buffer, buffer_len, name, format, dest) ESP_ERROR_CHECK(httpd_req_get_hdr_value_str(req, name, buffer, buffer_len)); sscanf(buffer, format, dest);
 
 esp_err_t http_draw_area(httpd_req_t *req) {
+  ESP_LOGI(__FUNCTION__, "started draw call\n");
   char header[20];
   memset(header, 0, 20); 
   int x, y, width, height;
   READ_HEADER(req, header, 20, "x", "%d", &x);
   READ_HEADER(req, header, 20, "y", "%d", &y);
-  READ_HEADER(req, header, 20, "height", "%d", &height);
   READ_HEADER(req, header, 20, "width", "%d", &width);
+  READ_HEADER(req, header, 20, "height", "%d", &height);
+  ESP_LOGI(__FUNCTION__, "%d %d %d %d\n", x, y, width, height);
   int should_clear = httpd_req_get_hdr_value_str(req, "width", header, 0) != ESP_ERR_NOT_FOUND ? 1: 0;
   // Data is binary
   int req_size = req->content_len;
@@ -78,15 +82,17 @@ esp_err_t http_draw_area(httpd_req_t *req) {
   int current_pos = 0;
   int amount_recieved;
   while ((amount_recieved = httpd_req_recv(req, (content+current_pos), req_size)) > 0) {
+    ESP_LOGI(__FUNCTION__, "Read %d bytes\n", amount_recieved);
     current_pos += amount_recieved;
   }
   if (amount_recieved < 0) {
     char msg[50];
     free(content);
-    sprintf(msg, "Failed to read byets. Return %d\n", amount_recieved);
+    ESP_LOGE(msg, "Failed to read byets. Return %d\n", amount_recieved);
     httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg);
     return ESP_ERR_INVALID_ARG;
   }
+  ESP_LOGI(__FUNCTION__, "Done reading %d bytes out of %d\n", current_pos, req_size);
   if (should_clear) {
     clear();
   }
