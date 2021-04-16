@@ -11,12 +11,15 @@ import devices
 all_devices = devices.DeviceCollection([
     devices_esp.ESPDevice(
         physical_dimensions = devices.Rectangle(
-            start=devices.Point(0,0),
+            start=devices.Point(
+                x=20,
+                y=14,
+            ),
             dimensions=devices.Dimensions(
                 width=20,
                 height=14,
             ),
-            rotation_deg=0,
+            rotation_deg=180,
         ),
         address="192.168.1.136",
     )

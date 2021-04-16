@@ -14,7 +14,6 @@ def http_clear(address):
     requests.get(f'http://{address}/clear')
 
 def http_draw(address, img_bytes, width, height):
-    print("aaaa", width, height, len(img_bytes))
     headers = {
         'clear': '1',  # TODO make this a parameter
         'height': str(height),
@@ -50,7 +49,6 @@ class ESPDevice(devices.Device):
 
     def draw(self, image: PIL.Image) -> None:
         resolution = self.get_resolution()
-        # TODO change resolution
         image = image.convert('L')
         image = image.resize((resolution.width, resolution.height))
         img_bytes = image.tobytes()

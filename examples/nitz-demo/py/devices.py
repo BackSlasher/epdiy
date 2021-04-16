@@ -104,9 +104,37 @@ def image_refit(image: PIL.Image, bounder: Dimensions) -> PIL.Image:
     return PIL.ImageOps.fit(image, new_dimensions)
 
 def image_crop(image: PIL.Image, rectangle: Rectangle) -> PIL.Image:
-    # TODO support rotation!
-    assert rectangle.rotation_deg == 0, "Dont know how to do rotations"
-    return image.crop(
+    # image.save('/tmp/blu/1.png')
+    original_dimensions = Dimensions(image.size[0], image.size[1])
+    new_image = PIL.Image.new(
+        image.mode,
+        size=(original_dimensions.width * 3, original_dimensions.height * 3),
+    )
+    # Add buffer coords to the rectangle
+    new_rectangle = Rectangle(
+        start=Point(
+            x=rectangle.start.x + original_dimensions.width,
+            y=rectangle.start.y + original_dimensions.height,
+        ),
+        dimensions=Dimensions(
+            width=rectangle.dimensions.width,
+            height=rectangle.dimensions.height,
+        ),
+        rotation_deg=rectangle.rotation_deg,
+    )
+    rectangle=new_rectangle
+    new_image.paste(
+        image,
+        box=(original_dimensions),
+    )
+    image = new_image
+    # image.save('/tmp/blu/2.png')
+    image = image.rotate(
+        rectangle.rotation_deg,
+        center=(rectangle.start),
+    )
+    # image.save('/tmp/blu/3.png')
+    image = image.crop(
         (
             rectangle.start.x,
             rectangle.start.y,
@@ -114,6 +142,8 @@ def image_crop(image: PIL.Image, rectangle: Rectangle) -> PIL.Image:
             rectangle.start.y + rectangle.dimensions.height,
         )
     )
+    # image.save('/tmp/blu/4.png')
+    return image
 
 
 class DeviceCollection(NamedTuple):
