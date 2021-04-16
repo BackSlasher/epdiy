@@ -1,1 +1,2 @@
-bin/python main.py -d 192.168.1.136 draw -f $(ls ~/Pictures/Wallpapers/keepers/* | shuf | head -n1)
+bin/python digink draw -f ~/Pictures/Wallpapers/keepers/spider-man-wallpapers-29908-7491543.png
+bin/python digink clear
